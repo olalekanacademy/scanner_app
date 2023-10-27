@@ -292,7 +292,7 @@ export default function TabTwoScreen() {
           </Text>
         </View>
         <View style={{ flexDirection: "row", gap: 6 }}>
-          <Link href={`productlogic/${item.id}`} asChild>
+          <Link href={`productlogic/${item.product_barcode}`} asChild>
             <TouchableOpacity
               style={styles.listBtn}
               onPress={() => {

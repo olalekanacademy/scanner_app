@@ -11,7 +11,7 @@ import {
 export default function ProductLogicLayout() {
   const router = useRouter();
   return (
-    <Stack>
+    <Stack initialRouteName="index">
       <Stack.Screen
         name="index"
         options={{

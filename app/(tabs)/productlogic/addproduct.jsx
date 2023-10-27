@@ -25,17 +25,13 @@ const windowHeight = Dimensions.get("screen").height;
 
 const db = SQLite.openDatabase("products.db");
 export default function CreateProductForm() {
-  const [per, setPer] = useState(false);
-  const [disableBtn, setDisableBtn] = useState(true);
   const {
     control,
     handleSubmit,
     reset,
     formState: { errors, isSubmitting, isSubmitSuccessful },
   } = useForm();
-  // const { state, startRecognizing, cancelRecognizing, stopRecognizing } =
-  //   useVoiceRecognition();
-  // const VoiceStore = useVoiceStore();
+
   const isPresented = router.canGoBack();
   const Refresh = useRefresh();
   const ref = useRef();
@@ -43,8 +39,6 @@ export default function CreateProductForm() {
   const [productDataUrl, setProductDataUrl] = useState("");
   const [refresh, setRefresh] = useState(1);
   const [addLoading, setAddLoading] = useState(false);
-
-  const nameTextInputRef = useRef();
 
   const isProductAlreadyExist = async (productName) => {
     return new Promise((resolve, reject) => {
@@ -66,97 +60,107 @@ export default function CreateProductForm() {
     });
   };
 
-  const fetchData = async () => {
-    const nextProductBarcode = await getNextProductBarcode();
-    setProductBarcode(nextProductBarcode);
-  };
-  useEffect(() => {
-    fetchData();
-  }, [refresh]);
-
-  const getNextDataUrl = () => {
-    return new Promise((resolve, reject) => {
-      ref.current?.toDataURL((data) => {
-        resolve(data);
-      });
-    });
+  const generateUniqueId = () => {
+    // Generate a unique ID using timestamp and a random number
+    const timestamp = new Date().getTime();
+    const randomNum = Math.floor(Math.random() * 1000);
+    return `${timestamp}${randomNum}`;
   };
 
-  const getNextProductBarcode = () => {
-    return new Promise((resolve, reject) => {
-      db.transaction((tx) => {
-        tx.executeSql(
-          "SELECT MAX(product_barcode) AS maxProductBarcode FROM products",
-          [],
-          (_, results) => {
-            const maxProductBarcode = results.rows.item(0).maxProductBarcode;
-            const nextProductBarcode = maxProductBarcode
-              ? maxProductBarcode + 1
-              : 1000;
-            setProductBarcode(nextProductBarcode);
+  // const fetchData = async () => {
+  //   const nextProductBarcode = await getNextProductBarcode();
+  //   setProductBarcode(nextProductBarcode);
+  // };
+  // useEffect(() => {
+  //   fetchData();
+  // }, [refresh]);
 
-            resolve(nextProductBarcode);
-          },
-          (error) => {
-            console.error("Error selecting table: ", error);
-            reject(error);
-          }
-        );
-      });
-    });
-  };
+  // const getNextDataUrl = () => {
+  //   return new Promise((resolve, reject) => {
+  //     ref.current?.toDataURL((data) => {
+  //       resolve(data);
+  //     });
+  //   });
+  // };
+
+  // const getNextProductBarcode = () => {
+  //   return new Promise((resolve, reject) => {
+  //     db.transaction((tx) => {
+  //       tx.executeSql(
+  //         "SELECT MAX(product_barcode) AS maxProductBarcode FROM products",
+  //         [],
+  //         (_, results) => {
+  //           const maxProductBarcode = results.rows.item(0).maxProductBarcode;
+  //           const nextProductBarcode = maxProductBarcode
+  //             ? maxProductBarcode + 1
+  //             : 1000;
+  //           setProductBarcode(nextProductBarcode);
+
+  //           resolve(nextProductBarcode);
+  //         },
+  //         (error) => {
+  //           console.error("Error selecting table: ", error);
+  //           reject(error);
+  //         }
+  //       );
+  //     });
+  //   });
+  // };
+
   const onSubmit = async (inputData) => {
     setAddLoading(true);
     try {
       // setProductBarcode(nextProductBarcode)
-      const productDataUrlPromise = await getNextDataUrl();
-      if (productDataUrlPromise) {
-        console.log(productDataUrlPromise, "oioio");
-        const data = {
-          ...inputData,
-          productData: productDataUrlPromise,
-        };
-        const productAlreadyExists = await isProductAlreadyExist(
-          data.productName
-        );
+      // const productDataUrlPromise = await getNextDataUrl();
+      // console.log(productDataUrlPromise, "oioio");
+      const data = {
+        ...inputData,
+        productData: null,
+        productCount: 0,
+        branded: false,
+        product_barcode: generateUniqueId(),
+      };
+      const productAlreadyExists = await isProductAlreadyExist(
+        data.productName
+      );
 
-        if (productAlreadyExists) {
-          Alert.alert("Error", "Product name already exists");
-          return;
-        }
-        db.transaction(
-          (tx) => {
-            tx.executeSql(
-              "INSERT INTO products (product_barcode, product_name, price, product_count, product_dataUrl) VALUES (?, ?, ?, ?,?);",
-              [
-                productBarcode,
-                data.productName,
-                data.productPrice,
-                data.productCount,
-                data.productData,
-              ],
-              (_, results) => {
-                console.log("Product inserted successfully");
-                Refresh.setAllProductsRefresh();
-                setRefresh((prev) => prev + 1);
-                reset();
-                // fetchProducts();
-                Alert.alert("Success", "Product inserted successfully");
-              },
-              (error) => {
-                console.error("Error inserting product: ", error);
-                Alert.alert("Error", "Error inserting product");
-              }
-            );
-          },
-          null,
-          null
-        );
-        // reset();
-        // VoiceStore.setVoiceNameInputData("");
-        // VoiceStore.setVoiceCountInputData("");
-        // VoiceStore.setVoicePriceInputData("");
+      if (productAlreadyExists) {
+        Alert.alert("Error", "Product name already exists");
+        return;
       }
+      db.transaction(
+        (tx) => {
+          tx.executeSql(
+            "INSERT INTO products (product_barcode, product_name, price, product_count, product_dataUrl,branded) VALUES (?, ?, ?, ?,?,?);",
+            [
+              data.product_barcode,
+              data.productName,
+              data.productPrice,
+              data.productCount,
+              data.productData,
+              data.branded,
+            ],
+            (_, results) => {
+              console.log("Product inserted successfully");
+              Refresh.setAllProductsRefresh();
+              setRefresh((prev) => prev + 1);
+              reset();
+              // fetchProducts();
+              Alert.alert("Success", "Product inserted successfully");
+            },
+            (error) => {
+              console.error("Error inserting product: ", error);
+              Alert.alert("Error", "Error inserting product");
+            }
+          );
+        },
+        null,
+        null
+      );
+      // reset();
+      // VoiceStore.setVoiceNameInputData("");
+      // VoiceStore.setVoiceCountInputData("");
+      // VoiceStore.setVoicePriceInputData("");
     } catch (error) {
       console.error("Error getting next product barcode: ", error);
       Alert.alert("Error", "Error getting next product barcode");
@@ -164,19 +168,11 @@ export default function CreateProductForm() {
       setAddLoading(false);
     }
   };
-  const isNumeric = (value) => {
-    return /^[0-9]+$/.test(value);
-  };
-  const isNumericDecimal = (value) => {
-    return /^\d+(\.\d*)?$/.test(value);
-  };
+
   return (
     <View style={styles.container}>
       {!isPresented && <Link href="../">Dismiss</Link>}
       <StatusBar style="light" />
-      {/* <View>
-        <Text>{JSON.stringify(state, null, 2)}</Text>
-      </View> */}
       <View style={styles.formContainer}>
         <Text style={{ color: "white", fontSize: 10 }}>PRODUCT NAME</Text>
         <Controller
@@ -189,29 +185,10 @@ export default function CreateProductForm() {
                 placeholder="Product Name"
                 onChangeText={(text) => {
                   field.onChange(text);
-
-                  // if (Array.from(text).length === 0) {
-                  //   return VoiceStore.setVoiceNameInputDataEmpty();
-                  // }
                 }}
                 value={field.value}
                 style={styles.textinput}
               />
-              {/* <TouchableOpacity
-                onPressIn={() => {
-                  startRecognizing();
-                }}
-                onPressOut={() => {
-                  VoiceStore.setVoiceNameInputData(state.results[0]);
-
-                  stopRecognizing();
-                }}
-              >
-                <FontAwesome name="microphone" size={50} color={"#f09b24"} />
-              </TouchableOpacity>
-              {errors.productName && (
-                <Text style={styles.errorText}>Product Name is required</Text>
-              )} */}
             </View>
           )}
         />
@@ -236,18 +213,6 @@ export default function CreateProductForm() {
                 style={styles.textinput}
                 keyboardType="numeric"
               />
-              {/* <Pressable
-                  onPressIn={() => {
-                    startRecognizing();
-                  }}
-                  onPressOut={() => {
-                    stopRecognizing();
-                    // cancelRecognizing();
-                    VoiceStore.setVoicePriceInputData(state.results[0]);
-                  }}
-                >
-                  <FontAwesome name="microphone" size={50} />
-                </Pressable> */}
               {errors.productPrice &&
                 (errors.productPrice.type === "required" ? (
                   <Text style={styles.errorText}>
@@ -261,9 +226,9 @@ export default function CreateProductForm() {
             </View>
           )}
         />
-        <Text style={{ color: "white", fontSize: 10 }}>PRODUCT COUNT</Text>
+        {/* <Text style={{ color: "white", fontSize: 10 }}>PRODUCT COUNT</Text> */}
 
-        <Controller
+        {/* <Controller
           name="productCount"
           control={control}
           rules={{
@@ -282,18 +247,7 @@ export default function CreateProductForm() {
                 style={styles.textinput}
                 keyboardType="numeric"
               />
-              {/* <Pressable
-                  onPressIn={() => {
-                    startRecognizing();
-                  }}
-                  onPressOut={() => {
-                    // cancelRecognizing();
-                    stopRecognizing();
-                    VoiceStore.setVoiceCountInputData(state.results[0]);
-                  }}
-                >
-                  <FontAwesome name="microphone" size={50} />
-                </Pressable> */}
+
               {errors.productCount &&
                 (errors.productCount.type === "required" ? (
                   <Text style={styles.errorText}>
@@ -306,8 +260,11 @@ export default function CreateProductForm() {
                 ))}
             </View>
           )}
-        />
-        <TouchableOpacity onPress={handleSubmit(onSubmit)}>
+        /> */}
+        <TouchableOpacity
+          style={{ marginTop: 15 }}
+          onPress={handleSubmit(onSubmit)}
+        >
           <Text style={styles.btnInput}>Add New Product</Text>
         </TouchableOpacity>
       </View>

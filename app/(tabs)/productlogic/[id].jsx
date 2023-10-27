@@ -39,7 +39,7 @@ export default function EditProduct() {
   const fetchProduct = () => {
     db.transaction((tx) => {
       tx.executeSql(
-        `SELECT * FROM products WHERE id = ${id}`,
+        `SELECT * FROM products WHERE product_barcode = ${id}`,
         [],
         (_, { rows }) => {
           setSingleProducts(rows["_array"]);

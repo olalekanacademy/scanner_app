@@ -1,5 +1,5 @@
-import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { Link, Tabs } from "expo-router";
+import FontAwesome from "@expo/vector-icons/FontAwesome"
+import { Link, Tabs } from "expo-router"
 import {
   Pressable,
   useColorScheme,
@@ -8,50 +8,58 @@ import {
   Platform,
   Alert,
   SafeAreaView,
-  View,
-} from "react-native";
+  View
+} from "react-native"
 
-import Colors from "../../constants/Colors";
-import { BarCodeScanner } from "expo-barcode-scanner";
-import { useEffect, useState } from "react";
-import { Stack, useRouter } from "expo-router";
-import Voice from "@react-native-voice/voice";
-import { Permission } from "react-native";
-import { useMountStore, useRefresh } from "../store/mainstore";
-import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
-import * as DocumentPicker from "expo-document-picker";
+import Colors from "../../constants/Colors"
+import { BarCodeScanner } from "expo-barcode-scanner"
+import { useEffect, useState } from "react"
+import { Stack, useRouter } from "expo-router"
+import Voice from "@react-native-voice/voice"
+import { Permission } from "react-native"
+import { useMountStore, useRefresh } from "../store/mainstore"
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet"
+import * as DocumentPicker from "expo-document-picker"
+import { BannerAd, BannerAdSize, TestIds } from "react-native-google-mobile-ads"
 import {
-  BannerAd,
-  BannerAdSize,
-  TestIds,
-} from "react-native-google-mobile-ads";
+  useCameraPermission,
+  useMicrophonePermission
+} from "react-native-vision-camera"
 
 /**
  * You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
  */
 function TabBarIcon(props: {
-  name: React.ComponentProps<typeof FontAwesome>["name"];
-  color: string;
+  name: React.ComponentProps<typeof FontAwesome>["name"]
+  color: string
 }) {
-  return <FontAwesome size={22} style={{ marginBottom: -10 }} {...props} />;
+  return <FontAwesome size={22} style={{ marginBottom: -10 }} {...props} />
 }
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-  const [hasPermission, setHasPermission] = useState(null);
-  const router = useRouter();
-  const Refresh = useRefresh();
+  const colorScheme = useColorScheme()
+  const [hasPermission, setHasPermission] = useState(null)
+  const router = useRouter()
+  const Refresh = useRefresh()
   // const setProductnav = useMountStore((state) => state.setProductnav);
+
+  const { hasPermission, requestPermission } = useCameraPermission()
+
+  useEffect(() => {
+    if (!hasPermission) {
+      requestPermission()
+    }
+  }, [])
 
   useEffect(() => {
     const getBarCodeScannerPermissions = async () => {
-      const { status } = await BarCodeScanner.requestPermissionsAsync();
+      const { status } = await BarCodeScanner.requestPermissionsAsync()
       // ts-ignore
-      setHasPermission(status === "granted");
-    };
+      setHasPermission(status === "granted")
+    }
 
-    getBarCodeScannerPermissions();
-  }, []);
+    getBarCodeScannerPermissions()
+  }, [])
 
   // useEffect(() => {
   //   const requestPermission = async () => {
@@ -71,10 +79,10 @@ export default function TabLayout() {
   // }, []);
 
   if (hasPermission === null) {
-    return <Text>Requesting for camera permission</Text>;
+    return <Text>Requesting for camera permission</Text>
   }
   if (hasPermission === false) {
-    return <Text>No access to camera</Text>;
+    return <Text>No access to camera</Text>
   }
 
   return (
@@ -82,7 +90,7 @@ export default function TabLayout() {
       <BottomSheetModalProvider>
         <Tabs
           screenOptions={{
-            tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
+            tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint
           }}
           initialRouteName="index"
         >
@@ -108,10 +116,10 @@ export default function TabLayout() {
 
               headerStyle: { backgroundColor: "#015c7a" },
               headerTitleStyle: { fontWeight: "normal", fontSize: 15 },
-              unmountOnBlur: true,
+              unmountOnBlur: true
             }}
           />
-          <Tabs.Screen
+          {/* <Tabs.Screen
             name="speech"
             options={{
               title: "Speech",
@@ -130,14 +138,34 @@ export default function TabLayout() {
               //   </>
               // ),
             }}
-          />
+          /> */}
+          {/* <Tabs.Screen
+            name="productcal"
+            options={{
+              title: "Calculation",
+              tabBarIcon: ({ color }) => (
+                <TabBarIcon name="calculator" color={color} />
+              ),
+              // header: () => (
+              //   <>
+              //     <View style={{ height: 50, backgroundColor: "black" }}></View>
+              //     <View style={{}}>
+              //       <BannerAd
+              //         size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
+              //         unitId={TestIds.BANNER}
+              //       />
+              //     </View>
+              //   </>
+              // ),
+            }}
+          /> */}
           <Tabs.Screen
             name="salesrecord"
             options={{
               title: "Sales Record",
               tabBarIcon: ({ color }) => (
                 <TabBarIcon name="book" color={color} />
-              ),
+              )
               // header: () => (
               //   <>
               //     <View style={{ height: 50, backgroundColor: "black" }}></View>
@@ -158,10 +186,10 @@ export default function TabLayout() {
               headerShown: false,
               tabBarIcon: ({ color }) => (
                 <TabBarIcon name="product-hunt" color={color} />
-              ),
+              )
             }}
           />
-          <Tabs.Screen
+          {/* <Tabs.Screen
             name="three"
             options={{
               title: "Prints",
@@ -180,9 +208,9 @@ export default function TabLayout() {
                 </>
               ),
             }}
-          />
+          /> */}
         </Tabs>
       </BottomSheetModalProvider>
     </>
-  );
+  )
 }

@@ -9,8 +9,8 @@
     ".expo/types/**/*.ts",
     "expo-env.d.ts",
     "app/(tabs)/index.jsx",
-    "app/(tabs)/two.jsx",
-    "app/(tabs)/three.jsx",
-    "app/(tabs)/speech.jsx"
+    "app/(tabs)/two.jsx"
+    // "app/(tabs)/three.jsx",
+    // "app/(tabs)/speech.jsx"
   ]
 }

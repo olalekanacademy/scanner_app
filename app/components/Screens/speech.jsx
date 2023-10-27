@@ -11,13 +11,13 @@ import {
 } from "react-native";
 import React, { useMemo, useCallback } from "react";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { useVoiceRecognition } from "../../hooks/useVoiceRecognition";
+import { useVoiceRecognition } from "../../../hooks/useVoiceRecognition";
 import { useEffect, useState, useRef } from "react";
-import { useVoiceProductStore, useRefresh } from "../store/mainstore";
+import { useVoiceProductStore, useRefresh } from "../../store/mainstore";
 import * as SQLite from "expo-sqlite";
-import CurrencySignFormatter from "../components/CurrencySignFormatter";
-import ConvertWordToNumber from "../components/ConvertWordToNumber";
-import CalculateLevenshteinDistance from "../components/CalculateLevenshte";
+import CurrencySignFormatter from "../CurrencySignFormatter";
+import ConvertWordToNumber from "../ConvertWordToNumber";
+import CalculateLevenshteinDistance from "../CalculateLevenshte";
 import LottieView from "lottie-react-native";
 
 const db = SQLite.openDatabase("products.db");
@@ -30,8 +30,13 @@ const generateUniqueId = () => {
   return `${timestamp}${randomNum}`;
 };
 const Speech = () => {
-  const { state, startRecognizing, cancelRecognizing, stopRecognizing } =
-    useVoiceRecognition();
+  const {
+    state,
+    startRecognizing,
+    cancelRecognizing,
+    stopRecognizing,
+    destroyRecognizing,
+  } = useVoiceRecognition();
   const [voiceStartState, setVoiceStartState] = useState(1);
 
   const [productValue, setProductValue] = useState([]);
@@ -43,6 +48,8 @@ const Speech = () => {
   const currentTimestamp = Date.now();
   const currentTimestampInSeconds = Math.floor(currentTimestamp / 1000);
   const [isTrue, setIsTrue] = useState(false);
+  const windowWidth = Dimensions.get("screen").width;
+  const windowHeight = Dimensions.get("screen").height;
 
   const setSalesRecordRefresh = useRefresh(
     (state) => state.setSalesRecordRefresh
@@ -427,7 +434,7 @@ const Speech = () => {
             width: windowWidth * 0.9,
             marginTop: windowHeight * 0.05,
           }}
-          source={require("../../assets/salesConfirm.json")}
+          source={require("../../../assets/salesConfirm.json")}
         />
       )}
       <View style={styles.sumTotalStyle}>
@@ -466,6 +473,7 @@ const Speech = () => {
           onPressOut={() => {
             stopRecognizing();
             setSpeechValue((prev) => [...prev, state.results[0]]);
+            destroyRecognizing();
             // setVoiceStartState((prev) => prev + 1);
             // cancelRecognizing();
           }}

@@ -11,7 +11,7 @@ import {
   Pressable,
 } from "react-native";
 import * as SQLite from "expo-sqlite";
-import PdfHtmlPart from "../components/PdfHtmlPart";
+import PdfHtmlPart from "../PdfHtmlPart";
 
 const windowWidth = Dimensions.get("screen").width;
 const windowHeight = Dimensions.get("screen").height;

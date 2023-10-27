@@ -74,88 +74,83 @@ export const useResultArray = create((set) => ({
     })),
 }));
 
-export const useVoiceProductStore = create((set, get) => ({
-  productArray: [],
-  productValue: [],
-  parsedValues: [],
-  setProductArray: (data) =>
-    set((state) => ({
-      productArray: [...state.productArray, data],
+export const useProductStore = create((set, get) => ({
+  productStore: [],
+  uniqueData: [],
+  setProductStore: (data) =>
+    set((state) => ({ productStore: [data, ...state.productStore] })),
+
+  setUniqueData: () => {
+    const { productStore } = get(); // Get the current productStore from the state
+
+    // Encapsulate the logic of the useEffect within setUniqueData
+    const barcodeCounts = {};
+
+    productStore.forEach((item) => {
+      const barcode = item.barcode;
+
+      if (barcodeCounts[barcode]) {
+        barcodeCounts[barcode] += 1;
+      } else {
+        barcodeCounts[barcode] = 1;
+      }
+    });
+
+    const newData = productStore.reduce((accumulator, item) => {
+      if (barcodeCounts[item.barcode] === 1) {
+        accumulator.push({ ...item, cart_count: 1 });
+      } else if (!accumulator.find((x) => x.barcode === item.barcode)) {
+        accumulator.push({ ...item, cart_count: barcodeCounts[item.barcode] });
+      }
+      return accumulator;
+    }, []);
+
+    set({ uniqueData: newData });
+  },
+
+  setProductStoreEmpty: () =>
+    set(() => ({
+      productStore: [],
     })),
-
-  setParsedValues: () =>
-    set((state) => {
-      const updatedParsedValues = state.productArray
-        .filter((item) => item !== undefined)
-        .map((item) => {
-          const parts = item.split(" ");
-          const numberPart =
-            parts[0] && !isNaN(parseInt(parts[0], 10))
-              ? parseInt(parts[0], 10)
-              : ConvertWordToNumber({ word: parts[0] }); // Assuming ConvertWordToNumber is a valid function
-          const comparePartx = parts.slice(1).join(" ");
-          const comparePart = String(comparePartx).toLowerCase().trim();
-          return { numberPart, comparePart };
-        });
-
-      return { parsedValues: updatedParsedValues };
-    }),
-
-  setProductFilter: (index) =>
-    set((state) => {
-      console.log(index, "index");
-      const filteredArray = state.productArray.filter(
-        (item) => item !== undefined
-      );
-      const productArrayFilter = filteredArray.filter((_, i) => i !== index);
-      console.log(productArrayFilter, "productArrayFilter");
-      return { productArray: productArrayFilter };
-    }),
-
-  handleQuantitySubtract: (index) =>
-    set((state) => {
-      const filteredArray = state.productArray.filter(
-        (item) => item !== undefined
-      );
-      console.log(filteredArray, "opo");
-      if (index >= 0 && index < filteredArray.length) {
-        const item = filteredArray[index];
-        const [number, itemName] = item.split(" ");
-        const newNumber = parseInt(number) - 1;
-
-        if (newNumber >= 0) {
-          filteredArray[index] = `${newNumber} ${itemName}`;
-        } else {
-          // Remove the item from the array if the new number is less than 0
-          filteredArray.splice(index, 1);
+  setUniqueDataEmpty: () =>
+    set(() => ({
+      uniqueData: [],
+    })),
+  increaseCartCount: (barcode) => {
+    set((state) => ({
+      uniqueData: state.uniqueData.map((item) => {
+        if (item.barcode === barcode) {
+          return { ...item, cart_count: item.cart_count + 1 };
         }
-      }
-      console.log(filteredArray, "xxx");
-      return { productArray: filteredArray };
-    }),
+        return item;
+      }),
+    }));
+  },
 
-  handleQuantityAddition: (index) =>
+  decreaseCartCount: (barcode) => {
     set((state) => {
-      const filteredArray = state.productArray.filter(
-        (item) => item !== undefined
-      );
-      console.log(filteredArray, "add");
-      if (index >= 0 && index < filteredArray.length) {
-        const item = filteredArray[index];
-        const [number, itemName] = item.split(" ");
-        const newNumber = parseInt(number) + 1;
+      // Create a new uniqueData array with cart_count decremented and filter out items where cart_count becomes 0
+      const updatedUniqueData = state.uniqueData
+        .map((item) => {
+          if (item.barcode === barcode && item.cart_count > 0) {
+            return { ...item, cart_count: item.cart_count - 1 };
+          }
+          return item;
+        })
+        .filter((item) => item.cart_count > 0);
 
-        filteredArray[index] = `${newNumber} ${itemName}`;
-      }
-      console.log(filteredArray, "addXX");
+      // Create a new productStore array without the item with cart_count equal to 0
+      const updatedProductStore = state.productStore.filter((item) => {
+        if (item.barcode === barcode) {
+          return item.cart_count > 0;
+        }
+        return true;
+      });
 
-      return { productArray: filteredArray };
-    }),
-
-  setProductArrayEmpty: () =>
-    set({
-      productArray: [],
-      productValue: [],
-      parsedValues: [],
-    }),
+      return {
+        uniqueData: updatedUniqueData,
+        productStore: updatedProductStore,
+      };
+    });
+  },
 }));

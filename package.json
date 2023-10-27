@@ -51,6 +51,7 @@
     "react-native": "0.72.4",
     "react-native-barcode-builder": "^2.0.0",
     "react-native-calendar-picker": "^7.1.4",
+    "react-native-camera-kit": "^13.0.0",
     "react-native-gesture-handler": "~2.12.0",
     "react-native-google-mobile-ads": "^12.3.0",
     "react-native-onboarding-swiper": "^1.2.0",
@@ -62,7 +63,9 @@
     "react-native-svg-transformer": "^1.1.0",
     "react-native-vector-icons": "^10.0.0",
     "react-native-view-shot": "^3.7.0",
+    "react-native-vision-camera": "^3.6.4",
     "react-native-web": "~0.19.6",
+    "react-native-worklets-core": "^0.2.2",
     "tailwindcss": "^3.3.3",
     "zustand": "^4.4.1"
   },

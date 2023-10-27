@@ -83,8 +83,7 @@ export default function SalesRecord() {
 
   // variables
   const snapPoints = useMemo(() => ["25%", "90%"], []);
-  // console.log(salesrecords, "uiu");
-  // callbacks
+
   const handlePresentModalPress = useCallback(() => {
     bottomSheetModalRef.current?.present();
   }, []);
