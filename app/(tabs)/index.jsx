@@ -25,9 +25,14 @@ import {
   useBottomSheetModal
 } from "@gorhom/bottom-sheet"
 import { useForm, Controller } from "react-hook-form"
-import { AutoFocus WhiteBalance, FlashMode } from "expo-camera"
+import { AutoFocus, WhiteBalance, FlashMode, Camera } from "expo-camera"
 import { Link } from "expo-router"
-import {useCameraDevices,Camera,useCodeScanner,CodeScanner} from "react-native-vision-camera"
+// import {
+//   useCameraDevices,
+//   Camera,
+//   useCodeScanner,
+//   CodeScanner
+// } from "react-native-vision-camera"
 
 const windowWidth = Dimensions.get("screen").width
 const windowHeight = Dimensions.get("screen").height
@@ -44,14 +49,13 @@ const buttonOperation = ({ operation, handleOperation }) => {
 }
 
 export default function TabOneScreen() {
-
-  const device = useCameraDevice('back')
-  const codeScanner = useCodeScanner({
-  codeTypes: ['qr', 'ean-13','code-128','ean-8','code-39','code-93','data-matrix'],
-  onCodeScanned: (codes) => {
-    console.log(`Scanned ${codes} codes!`)
-  }
-})
+  //   const device = useCameraDevice('back')
+  //   const codeScanner = useCodeScanner({
+  //   codeTypes: ['qr', 'ean-13','code-128','ean-8','code-39','code-93','data-matrix'],
+  //   onCodeScanned: (codes) => {
+  //     console.log(`Scanned ${codes} codes!`)
+  //   }
+  // })
 
   const [scanned, setScanned] = useState(false)
   const [scanBarcodeValue, setBarcodeValue] = useState([])
@@ -69,7 +73,8 @@ export default function TabOneScreen() {
   const [sheetChange, setSheetChange] = useState("")
   const [sheetChangeAddProduct, setSheetChangeAddProduct] = useState("")
 
-  const cameraRef = useRef()
+  // const cameraRef = useRef()
+
   const bottomSheetModalRef = useRef()
   const bottomSheetModalRefAddProduct = useRef()
   const groupID = useId()
@@ -359,7 +364,6 @@ export default function TabOneScreen() {
             }
             setProductStore(data)
             setUniqueData()
-            cameraRef.current && cameraRef.current.autoFocusAsync()
           } else {
             handlePresentModalPress()
             reset()
@@ -766,26 +770,13 @@ export default function TabOneScreen() {
 
           // barCodeTypes={[BarCodeScanner.Constants.BarCodeType.code128]}
         /> */}
-        {/* <Camera
+        <Camera
           onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
           autoFocus={AutoFocus.on}
-          style={{
-            flex: 1,
-            height: "100%",
-            width: "100%",
-            position: "absolute"
-            // bottom: windowHeight * 0.1,
-            // display: "flex",
-            // justifyContent: "flex-start",
-            // alignItems: "flex-start",
-            // zIndex: 1,
-          }}
+          style={StyleSheet.absoluteFill}
           ratio="16:9"
-          ref={cameraRef}
           flashMode={flashCheck ? FlashMode.torch : FlashMode.off}
-        /> */}
-        {device === null ? "No Camera":<Camera device={useCameraDevices('back')} style={StyleSheet.absoluteFill} isActive={true} codeScanner={codeScanner} />
-}
+        />
         <BottomSheetModal
           ref={bottomSheetModalRef}
           index={1}
